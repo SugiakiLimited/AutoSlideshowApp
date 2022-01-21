@@ -13,6 +13,7 @@ import android.content.ContentUris
 import android.widget.ImageView
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -27,6 +28,25 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
+        //Android 6.0以降の場合
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //バージョンの許可状態を確認する
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                //許可されている
+                getContentsInfo()
+            } else {
+                //許可されていないので許可ダイアログを表示する
+                requestPermissions(
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    PERMISSIONS_REQUEST_CODE
+                )
+            }
+            //Android 5 系以下の場合
+        } else {
+            getContentsInfo()
+        }
 
         next_button.setOnClickListener(this)
         play_button.setOnClickListener(this)
@@ -53,24 +73,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
 
-
-        //Android 6.0以降の場合
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //バージョンの許可状態を確認する
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                //許可されている
-                getContentsInfo()
-            } else {
-                //許可されていないので許可ダイアログを表示する
-                requestPermissions(
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                    PERMISSIONS_REQUEST_CODE
-                )
-            }
-            //Android 5 系以下の場合
-        } else {
-            getContentsInfo()
-        }
     }
 
     override fun onRequestPermissionsResult(
@@ -82,6 +84,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             PERMISSIONS_REQUEST_CODE ->
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getContentsInfo()
+                }else{
+                    next_button.isClickable = false
+                    play_button.isClickable = false
+                    previous_button.isClickable = false
+
+                    val toast = Toast.makeText(applicationContext, "画像にアクセスできません", Toast.LENGTH_LONG).show()
                 }
         }
     }
